@@ -1,0 +1,84 @@
+create database raw;
+CREATE OR REPLACE TABLE expense_claims (
+claim_id STRING,
+employee_id STRING,
+claim_date DATE,
+expense_type STRING, -- Travel, Food, Accommodation, etc.
+claimed_amount NUMBER,
+currency STRING,
+approval_status STRING, -- Pending, Approved, Rejected
+approver_id STRING
+);
+
+INSERT INTO expense_claims VALUES
+('CLM001', 'E001', '2024-04-01', 'Travel', 12000, 'INR', 'Pending', 'MGR001'),
+('CLM002', 'E002', '2024-04-02', 'Food', 800, 'INR', 'Approved', 'MGR002'),
+('CLM003', 'E001', '2024-04-03', 'Accommodation', 5000, 'INR', 'Rejected', 'MGR001'),
+('CLM004', 'E003', '2024-04-04', 'Travel', 9500, 'INR', 'Pending', 'MGR003'),
+('CLM005', 'E001', '2024-04-01', 'Travel', 12000, 'INR', 'Pending', 'MGR001'); -- Duplicate claim
+
+
+update expense_claims
+set
+claim_id = null where claim_id = 'CLM001';
+
+-------------1st model  (stg_expense_claims)
+
+
+
+SELECT
+claim_id,
+employee_id,
+claim_date,
+UPPER(expense_type) AS expense_type,
+claimed_amount,
+currency,
+LOWER(approval_status) AS approval_status,
+approver_id
+FROM RAW.PUBLIC.EXPENSE_CLAIMS
+
+
+
+--- this will be default view 
+
+
+
+
+{% macro check_nulls(table_name, column_list) %}
+{% set null_conditions = [] %}
+{% for col in column_list %}
+{% do null_conditions.append(col ~ ' IS NULL') %}
+{% endfor %}
+
+
+SELECT
+*,
+CASE
+WHEN {{ null_conditions | join(' OR ') }} THEN 'FAIL'
+ELSE 'PASS'
+END AS null_check_status
+FROM {{ table_name }}
+{% endmacro %}
+
+
+----2nd model (dq_null_check_expense_claims.sql)
+
+{{ config(
+materialized='table',
+database='RAW',
+alias='DQ_NULL_CHECK_EXPENSE_CLAIMS'
+) }}
+
+
+
+WITH dq_check AS (
+{{ check_nulls(ref('stg_expense_claims'), ['claim_id', 'employee_id', 'claimed_amount']) }}
+)
+
+
+SELECT *
+FROM dq_check
+WHERE null_check_status = 'FAIL'
+
+
+
