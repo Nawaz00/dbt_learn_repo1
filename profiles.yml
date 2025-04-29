@@ -1,0 +1,13 @@
+dbt_learn_repo1:
+  outputs:
+    dev:
+      account: XFXCNTE-QS05562
+      database: DBT_DATABASE
+      password: Shanumanzil1@@
+      role: EDW_CORP_DBT_DEVELOPER
+      schema: BRONZE_AIRBNB
+      threads: 1
+      type: snowflake
+      user: GAJULAMOHAMMED
+      warehouse: COMPUTE_WH
+  target: dev
