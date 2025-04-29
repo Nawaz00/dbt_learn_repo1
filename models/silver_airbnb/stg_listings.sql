@@ -1,4 +1,4 @@
-WITH src_listings AS 
+WITH stg_listings AS 
 ( SELECT
 *
 FROM
