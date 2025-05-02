@@ -6,5 +6,5 @@ profile: 'dbt_learn_repo1'
 
 model-paths: ["models"]
 
-  dbt_learn_repo1:s
+  dbt_learn_repo1:
 
