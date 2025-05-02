@@ -6,6 +6,5 @@ profile: 'dbt_learn_repo1'
 
 model-paths: ["models"]
 
-  dbt_learn_repo1:
-    silver_airbnb:
+  dbt_learn_repo1:s
 
